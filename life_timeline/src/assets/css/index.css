@@ -1,0 +1,23 @@
+@import "~normalize.css";
+@import "~@arco-design/web-react/dist/css/arco.css";
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+}
