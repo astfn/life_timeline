@@ -5,7 +5,7 @@ export const DayTimelineWrapper = styled.div`
   width: 100%;
   height: 100%;
   border-radius: 3px;
-  overflow: hidden;
+
   /**
   * 电脑端
   */
@@ -20,12 +20,10 @@ export const DayTimelineWrapper = styled.div`
 
     .day-timeline-visualized {
       flex: 1;
-      /* background-color: #eee; */
     }
     .day-timeline-form-elems {
       width: 500px;
-      border-right: 1px solid #fff;
-      /* background-color: red; */
+      border-right: 1px solid #eee;
     }
   }
 
@@ -36,6 +34,7 @@ export const DayTimelineWrapper = styled.div`
     display: block;
     .day-timeline-visualized,
     .day-timeline-form-elems {
+      height: 620px;
       overflow-y: auto;
       width: 100%;
       padding: 8px 0px;
@@ -43,7 +42,7 @@ export const DayTimelineWrapper = styled.div`
     .day-timeline-visualized {
     }
     .day-timeline-form-elems {
-      border-bottom: 1px solid #fff;
+      border-bottom: 1px solid #eee;
     }
   }
 `;

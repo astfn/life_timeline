@@ -14,7 +14,8 @@ import {
 } from "@/views/day-timeline/store/types";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 //store
-import { changeVisualizedTimeMode } from "@/views/day-timeline/store/actoinCreators";
+import { changeVisualizedTimeModeAction } from "@/views/day-timeline/store/actoinCreators";
+import { VisualizedTimeModeMapRateCount } from "@/views/day-timeline/store/constants";
 
 const TabPane = Tabs.TabPane;
 
@@ -49,7 +50,9 @@ const ASDayTimeLineVisualized: React.FC = () => {
   const dispatch = useDispatch();
 
   const handleChangeTab = (currentTabKey: string) => {
-    dispatch(changeVisualizedTimeMode(currentTabKey as VisualizedTimeModeEnum));
+    dispatch(
+      changeVisualizedTimeModeAction(currentTabKey as VisualizedTimeModeEnum)
+    );
   };
 
   /**
@@ -69,9 +72,15 @@ const ASDayTimeLineVisualized: React.FC = () => {
     );
   }
 
+  function useUsableRateCountTitle() {
+    return `您还有 ${Number(
+      VisualizedTimeModeMapRateCount[visualizedTimeMode] -
+        useGetRateSelectCount()
+    ).toFixed(1)} 个星星可使用`;
+  }
   return (
     <div className="day-timeline-visualized">
-      {useGetRateSelectCount()}
+      {useUsableRateCountTitle()}
       <StyledWrapper>
         {renderTabs()}
         <Rate

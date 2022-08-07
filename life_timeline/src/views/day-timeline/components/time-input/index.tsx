@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { UnitOptions } from "@/views/day-timeline/store/constants";
+import { TimeUnitOptions } from "@/views/day-timeline/store/constants";
 //components
 import { StyledWrapper } from "./style";
 import { Form, InputNumber } from "@arco-design/web-react";
@@ -16,14 +16,14 @@ const ASTimeInput: React.FC<ASTimeInputProps> = (props) => {
   const { info, ...extra } = props;
   const { name, unit } = info;
 
-  const showLabel = (): string => `${name} (${UnitOptions[unit]})`;
+  const showLabel = (): string => `${name} (${TimeUnitOptions[unit]})`;
   return (
     <div className="as-time-input">
       <StyledWrapper>
         <FormItem label={showLabel()} layout="vertical">
           <InputNumber
             {...extra}
-            min={0}
+            min={1}
             step={1}
             precision={0}
             size="small"

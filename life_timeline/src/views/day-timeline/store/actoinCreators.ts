@@ -2,9 +2,9 @@ import { Dispatch } from "redux";
 import { ThunkFuncAsAnyAction } from "@/utils";
 //types
 import ActionTypesEnum from "./actionTypes";
-import { VisualizedTimeModeEnum } from "./types";
+import { VisualizedTimeModeEnum, FormElement } from "./types";
 
-export const changeVisualizedTimeMode = (
+export const changeVisualizedTimeModeAction = (
   visualizedTimeMode: VisualizedTimeModeEnum
 ) => {
   return {
@@ -15,6 +15,18 @@ export const changeVisualizedTimeMode = (
   };
 };
 
+export const addTimeLineAction = (newTimeLine: FormElement) => {
+  return {
+    type: ActionTypesEnum.ADD_TIMELINE,
+    payload: {
+      newTimeLine,
+    },
+  };
+};
+
+/**
+ * thunks
+ */
 export function add_thunk() {
   return ThunkFuncAsAnyAction((dispatch: Dispatch, getState: Function) => {
     dispatch({

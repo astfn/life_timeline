@@ -6,7 +6,7 @@ export const AppStyledWrapper = styled.div`
   main {
     padding: 8px;
     overflow-y: auto;
-    background-color: aliceblue;
+    /* background-color: aliceblue; */
   }
 
   /**

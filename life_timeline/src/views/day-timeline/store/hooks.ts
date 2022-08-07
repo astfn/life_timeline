@@ -3,12 +3,9 @@ import { shallowEqual, useSelector } from "react-redux";
 //constants
 import { VisualizedTimeModeMapRateCount } from "./constants";
 //types
-import {
-  DayTimeLineStore,
-  VisualizedTimeModeEnum,
-  TimeUnitEnum,
-  FormElements,
-} from "./types";
+import { DayTimeLineStore, VisualizedTimeModeEnum } from "./types";
+//utils
+import { calculateSelectCount } from "./utils";
 
 /**
  * 根据当前的可视化时间模式，获取对应的RateCount
@@ -36,7 +33,7 @@ export function useGetRateCount() {
 /**
  * 根据 store 中的耗时数据，计算应被选中的ReteCount
  */
-export function useGetRateSelectCount() {
+export function useGetRateSelectCount(): number {
   //store
   const { visualizedTimeMode, formElements } = useSelector((store: any) => {
     const dayTimeLineStore = store.dayTimeLineStore as DayTimeLineStore;
@@ -55,50 +52,47 @@ export function useGetRateSelectCount() {
 
   return rateSelectCount;
 }
+
 /**
- * 计算工具
+ * 判断时间线是否被占满
+ * 按最小的单位去计算(保证准确性)
  */
-function calculateSelectCount(
-  mode: VisualizedTimeModeEnum,
-  formElements: FormElements
-): number {
-  let selectCount = 0;
-  mode === VisualizedTimeModeEnum.HOUR &&
-    (selectCount = calculateSelectCountByHour(formElements));
-  mode === VisualizedTimeModeEnum.MINUTE &&
-    (selectCount = calculateSelectCountByMinute(formElements));
-  return selectCount;
+export function useTimeLineIsFull(): {
+  isFull: boolean;
+  usableQuantity: number;
+} {
+  //store
+  const { formElements } = useSelector((store: any) => {
+    const dayTimeLineStore = store.dayTimeLineStore as DayTimeLineStore;
+    return {
+      formElements: dayTimeLineStore.formElements,
+    };
+  }, shallowEqual);
+  //state
+  const [isFull, setIsFull] = useState<boolean>(true);
+  const [usableQuantity, setUsableQuantity] = useState<number>(0);
+  //hooks
+  const visualizedTimeMode = VisualizedTimeModeEnum.MINUTE;
+  useEffect(() => {
+    const allCount = VisualizedTimeModeMapRateCount[visualizedTimeMode];
+    const selectCount = calculateSelectCount(visualizedTimeMode, formElements);
+    setIsFull(selectCount >= allCount);
+    setUsableQuantity(allCount - selectCount);
+  }, [formElements, visualizedTimeMode]);
+
+  console.log(isFull, usableQuantity);
+  return {
+    isFull,
+    usableQuantity,
+  };
 }
 
-function calculateSelectCountByHour(formElements: FormElements) {
-  let selectedCount = 0;
-  Object.entries(formElements).forEach(([id, item]) => {
-    let currentTime = 0;
-    const itemWeight = Number(item.weight);
-
-    item.unit === TimeUnitEnum.HOUR && (currentTime = itemWeight);
-    item.unit === TimeUnitEnum.MINUTE &&
-      (currentTime = Number((itemWeight / 60).toFixed(1)));
-
-    selectedCount += currentTime;
-  });
-
-  return selectedCount;
-}
-
-function calculateSelectCountByMinute(formElements: FormElements) {
-  let selectedCount = 0;
-
-  Object.entries(formElements).forEach(([id, item]) => {
-    let currentTime = 0;
-    const itemWeight = Number(item.weight);
-
-    item.unit === TimeUnitEnum.MINUTE && (currentTime = itemWeight);
-    item.unit === TimeUnitEnum.HOUR &&
-      (currentTime = Math.round(itemWeight * 60));
-
-    selectedCount += currentTime;
-  });
-
-  return selectedCount;
+/**
+ * 展示当前的可用时间
+ */
+export function useShowUsableQuantity() {
+  const { usableQuantity } = useTimeLineIsFull();
+  const hour = Math.floor(usableQuantity / 60);
+  const minute = usableQuantity - hour * 60;
+  return { hour, minute };
 }

@@ -8,7 +8,7 @@ export const VisualizedTimeModeMapRateCount = Object.freeze({
   [VisualizedTimeModeEnum.MINUTE]: 24 * 60,
 });
 
-export const UnitOptions = Object.freeze({
+export const TimeUnitOptions = Object.freeze({
   [TimeUnitEnum.HOUR]: "小时",
   [TimeUnitEnum.MINUTE]: "分钟",
 });
@@ -17,7 +17,7 @@ export function initFormElems(): FormElements {
   return {
     [Encode("通勤")]: {
       name: "通勤",
-      weight: "30",
+      weight: "25",
       unit: TimeUnitEnum.MINUTE,
     },
     [Encode("工作")]: {
