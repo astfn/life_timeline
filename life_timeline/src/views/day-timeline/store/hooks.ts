@@ -80,7 +80,6 @@ export function useTimeLineIsFull(): {
     setUsableQuantity(allCount - selectCount);
   }, [formElements, visualizedTimeMode]);
 
-  console.log(isFull, usableQuantity);
   return {
     isFull,
     usableQuantity,

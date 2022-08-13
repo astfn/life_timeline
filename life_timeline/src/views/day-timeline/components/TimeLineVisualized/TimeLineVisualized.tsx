@@ -1,6 +1,6 @@
 //components
 import { StyledWrapper } from "./style";
-import { Rate, Tabs } from "@arco-design/web-react";
+import { PageHeader, Rate, Tabs, Tooltip } from "@arco-design/web-react";
 //utils
 import { memo } from "react";
 import {
@@ -73,17 +73,33 @@ const ASDayTimeLineVisualized: React.FC = () => {
   }
 
   function useUsableRateCountTitle() {
-    return `您还有 ${Number(
-      VisualizedTimeModeMapRateCount[visualizedTimeMode] -
-        useGetRateSelectCount()
-    ).toFixed(1)} 个星星可使用`;
+    const count = Number(
+      Number(
+        VisualizedTimeModeMapRateCount[visualizedTimeMode] -
+          useGetRateSelectCount()
+      ).toFixed(1)
+    );
+    const showCount = count === Math.round(count) ? Math.round(count) : count;
+    return `您还有 ${showCount} 个星星可使用`;
   }
   return (
     <div className="day-timeline-visualized">
-      {useUsableRateCountTitle()}
       <StyledWrapper>
-        {renderTabs()}
+        <PageHeader
+          className="visualized-header"
+          title={
+            <Tooltip
+              position="bl"
+              trigger="hover"
+              content={useUsableRateCountTitle()}
+            >
+              <span className="pointer">{useUsableRateCountTitle()}</span>
+            </Tooltip>
+          }
+          subTitle={renderTabs()}
+        />
         <Rate
+          className="visualized-rate"
           allowHalf
           readonly
           count={useGetRateCount()}

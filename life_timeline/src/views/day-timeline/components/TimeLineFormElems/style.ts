@@ -10,6 +10,11 @@ export const StyledWrapper = styled.div`
   main {
     width: 100%;
     flex: 1;
+    .space {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
   }
   footer {
     display: flex;

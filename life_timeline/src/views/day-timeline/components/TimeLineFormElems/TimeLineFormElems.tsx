@@ -2,7 +2,7 @@
 import { StyledWrapper } from "./style";
 import ASTimeInput from "@/views/day-timeline/components/time-input";
 import AddTimeLineModal from "@/views/day-timeline/components/AddTimeLineModal/AddTimeLineModal";
-import { Button, Message } from "@arco-design/web-react";
+import { Button, Form, Message } from "@arco-design/web-react";
 import { IconLeft, IconRight } from "@arco-design/web-react/icon";
 //types
 import {
@@ -10,13 +10,16 @@ import {
   FormElement,
 } from "@/views/day-timeline/store/types";
 //utils
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useLayoutEffect, useState } from "react";
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
 import {
   useShowUsableQuantity,
   useTimeLineIsFull,
 } from "@/views/day-timeline/store/hooks";
-import { addTimeLineAction } from "@/views/day-timeline/store/actoinCreators";
+import {
+  addTimeLineAction,
+  updateFormItemsValue_Thunk,
+} from "@/views/day-timeline/store/actoinCreators";
 import { timeLineIsRepeat, toMinute } from "@/views/day-timeline/store/utils";
 
 const ButtonGroup = Button.Group;
@@ -36,14 +39,42 @@ const ASDayTimeLineFormElems: React.FC = () => {
   /**
    * 表单元素相关
    */
+  const [form] = Form.useForm();
+  const [formInfo, setFormInfo] = useState<{ [id: string]: string }>({});
+
+  //初始化、更新表单信息
+  useLayoutEffect(() => {
+    console.log("watch_formElements", formElements);
+    Object.entries(formElements).forEach(([id, formElem]) => {
+      form.setFieldValue(id, formElem.weight);
+    });
+  }, [form, formElements]);
+
+  //获取最新的表单信息
+  function onValuesChange(_changeValues: any, values: any) {
+    setFormInfo(values);
+  }
+
   function renderFormElements() {
     return Object.entries(formElements).map(([id, formElem]) => {
       return (
         <div key={id}>
-          <ASTimeInput info={formElem} defaultValue={formElem.weight} />
+          <ASTimeInput field={id} info={formElem} />
         </div>
       );
     });
+  }
+
+  /**
+   * updateVisualized
+   */
+  function updateVisualized() {
+    dispatch(
+      updateFormItemsValue_Thunk({
+        formItemIdMapNewValue: formInfo,
+        formElements,
+      })
+    );
   }
 
   /**
@@ -79,24 +110,17 @@ const ASDayTimeLineFormElems: React.FC = () => {
         return;
       }
       dispatch(addTimeLineAction(formInfo));
-      setAddTimeLineSuccessMesageTrigger(!addTimeLineSuccessMesageTrigger);
+      Message.success({
+        content: `添加成功 (${showUsableQuantity})`,
+      });
       handleCancel();
     }
   }
 
-  //添加成功后,弹出message
-  const [addTimeLineSuccessMesageTrigger, setAddTimeLineSuccessMesageTrigger] =
-    useState<boolean | "init">("init");
-
-  useEffect(() => {
-    if (addTimeLineSuccessMesageTrigger === "init") return;
-    Message.success({
-      content: `添加成功 (${showUsableQuantity})`,
-    });
-  }, [addTimeLineSuccessMesageTrigger, showUsableQuantity]);
-
   const handleAddTimeLine = useCallback(() => {
-    !isFull && setVisible(true);
+    !isFull
+      ? setVisible(true)
+      : Message.info({ content: "您已完美分配时间😀" });
   }, [isFull]);
 
   return (
@@ -107,7 +131,11 @@ const ASDayTimeLineFormElems: React.FC = () => {
             您还有 {hour} 小时 {minute} 分钟可自由支配
           </h3>
         </header>
-        <main>{renderFormElements()}</main>
+        <main>
+          <Form layout="vertical" form={form} onValuesChange={onValuesChange}>
+            <div className="space">{renderFormElements()}</div>
+          </Form>
+        </main>
         <footer>
           <ButtonGroup>
             <Button
@@ -119,7 +147,12 @@ const ASDayTimeLineFormElems: React.FC = () => {
             >
               添加时间线
             </Button>
-            <Button type="primary" shape="round" style={{ padding: "0 8px" }}>
+            <Button
+              onClick={updateVisualized}
+              type="primary"
+              shape="round"
+              style={{ padding: "0 8px" }}
+            >
               更新可视化
               <IconRight />
             </Button>

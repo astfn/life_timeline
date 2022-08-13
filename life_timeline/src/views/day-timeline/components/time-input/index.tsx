@@ -13,14 +13,14 @@ interface ASTimeInputProps {
 
 const FormItem = Form.Item;
 const ASTimeInput: React.FC<ASTimeInputProps> = (props) => {
-  const { info, ...extra } = props;
+  const { info, field, ...extra } = props;
   const { name, unit } = info;
 
   const showLabel = (): string => `${name} (${TimeUnitOptions[unit]})`;
   return (
     <div className="as-time-input">
       <StyledWrapper>
-        <FormItem label={showLabel()} layout="vertical">
+        <FormItem label={showLabel()} field={field} layout="vertical">
           <InputNumber
             {...extra}
             min={1}
