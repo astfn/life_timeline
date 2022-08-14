@@ -1,4 +1,5 @@
 {
+  "homepage": ".",
   "name": "lif_time_line",
   "version": "0.1.0",
   "private": true,
