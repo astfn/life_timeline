@@ -29,6 +29,15 @@ export const addTimeLineAction = (newTimeLine: FormElement) => {
   };
 };
 
+export const deleteTimeLinesAction = (formItemKeys: string[]) => {
+  return {
+    type: ActionTypesEnum.DELETE_TIMELINES,
+    payload: {
+      formItemKeys,
+    },
+  };
+};
+
 export const updateFormItemsValue = (formItemIdMapNewValue: {
   [id: string]: string;
 }) => {
@@ -52,6 +61,21 @@ export const coverFormItems = (formElements: FormElements) => {
 /**
  * thunks
  */
+export function deleteFormItems_Thunk(
+  formItemKeys: string[],
+  successCallback: Function
+) {
+  return ThunkFuncAsAnyAction((dispatch: Dispatch) => {
+    //判空
+    if (formItemKeys.length === 0) {
+      Message.warning({ content: `请选择时间线` });
+      return;
+    }
+    dispatch(deleteTimeLinesAction(formItemKeys));
+    successCallback();
+  });
+}
+
 export function updateFormItemsValue_Thunk({
   formItemIdMapNewValue,
   formElements,

@@ -2,7 +2,7 @@
 import { StyledWrapper } from "./style";
 import ASTimeInput from "@/views/day-timeline/components/time-input";
 import AddTimeLineModal from "@/views/day-timeline/components/AddTimeLineModal/AddTimeLineModal";
-import { Button, Form, Message } from "@arco-design/web-react";
+import { Button, Form, Message, Checkbox, Space } from "@arco-design/web-react";
 import { IconLeft, IconRight } from "@arco-design/web-react/icon";
 //types
 import {
@@ -10,6 +10,7 @@ import {
   FormElement,
 } from "@/views/day-timeline/store/types";
 //utils
+import classNames from "classnames";
 import {
   memo,
   useCallback,
@@ -20,16 +21,34 @@ import {
 } from "react";
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
 import {
+  useGetFormItemKeys,
   useShowUsableQuantity,
   useTimeLineIsFull,
 } from "@/views/day-timeline/store/hooks";
 import {
   addTimeLineAction,
+  deleteFormItems_Thunk,
   updateFormItemsValue_Thunk,
 } from "@/views/day-timeline/store/actoinCreators";
 import { timeLineIsRepeat, toMinute } from "@/views/day-timeline/store/utils";
+// import { isEmpty } from "lodash";
+import useCheckbox from "@arco-design/web-react/es/Checkbox/useCheckbox";
 
+// const CheckboxGroup = Checkbox.Group;
 const ButtonGroup = Button.Group;
+
+enum ModeEnum {
+  ORDINARY,
+  EDIT,
+}
+const newModeTemp = {
+  [ModeEnum.ORDINARY]: ModeEnum.EDIT,
+  [ModeEnum.EDIT]: ModeEnum.ORDINARY,
+};
+const ModeTitle = Object.freeze({
+  [ModeEnum.ORDINARY]: "编辑",
+  [ModeEnum.EDIT]: "退出编辑",
+});
 
 const ASDayTimeLineFormElems: React.FC = () => {
   /**
@@ -43,11 +62,14 @@ const ASDayTimeLineFormElems: React.FC = () => {
   }, shallowEqual);
   const dispatch = useDispatch();
 
+  const formItemKeys = useGetFormItemKeys();
+
   /**
    * 表单元素相关
    */
   const [form] = Form.useForm();
   const [formInfo, setFormInfo] = useState<{ [id: string]: string }>({});
+  // const [selectFormItemKeys, setSelectFormItemKeys] = useState<string[]>([]);
 
   //初始化、更新表单信息
   useLayoutEffect(() => {
@@ -65,7 +87,16 @@ const ASDayTimeLineFormElems: React.FC = () => {
   function renderFormElements() {
     return Object.entries(formElements).map(([id, formElem]) => {
       return (
-        <div key={id}>
+        <div key={id} className="form-item">
+          {mode === ModeEnum.EDIT && (
+            <Checkbox
+              value={id}
+              checked={isSelected(id)}
+              onChange={(checked) => {
+                setValueSelected(id, checked);
+              }}
+            />
+          )}
           <ASTimeInput field={id} info={formElem} />
         </div>
       );
@@ -139,13 +170,92 @@ const ASDayTimeLineFormElems: React.FC = () => {
     };
   }, [handleConfirmAddTimeLine, visible]);
 
-  console.log(showUsableQuantity);
   const handleAddTimeLine = useCallback(() => {
     !isFull
       ? setVisible(true)
       : Message.info({ content: "您已完美分配时间😀" });
   }, [isFull]);
 
+  /**
+   * 编辑模式相关
+   */
+  const [mode, setMode] = useState<ModeEnum>(ModeEnum.ORDINARY);
+
+  const {
+    isSelected,
+    selected,
+    setValueSelected,
+    isAllSelected,
+    selectAll,
+    unSelectAll,
+    isPartialSelected,
+    toggle, //反选
+  } = useCheckbox(formItemKeys, []);
+
+  function handleChangeMode() {
+    const newMode = newModeTemp[mode];
+    setMode(newMode);
+  }
+
+  function handleDeleteFormItems() {
+    console.log(selected);
+    dispatch(
+      deleteFormItems_Thunk(selected, () => {
+        unSelectAll();
+      })
+    );
+  }
+
+  function renderEditBar() {
+    return (
+      <div
+        className={classNames("edit-top-bar", {
+          show: mode === ModeEnum.EDIT,
+        })}
+      >
+        <Checkbox
+          onChange={(checked) => {
+            if (checked) {
+              selectAll();
+            } else {
+              unSelectAll();
+            }
+          }}
+          checked={isAllSelected()}
+          indeterminate={isPartialSelected()}
+        >
+          全选 ({selected.length})
+        </Checkbox>
+        <Space size="mini">
+          <Button
+            size="mini"
+            type="outline"
+            onClick={() => {
+              toggle();
+            }}
+          >
+            反选
+          </Button>
+          <Button
+            size="mini"
+            type="outline"
+            status="danger"
+            onClick={handleDeleteFormItems}
+          >
+            确认删除
+          </Button>
+          <Button
+            size="mini"
+            type="outline"
+            status="success"
+            onClick={handleChangeMode}
+          >
+            退出编辑
+          </Button>
+        </Space>
+      </div>
+    );
+  }
   return (
     <div className="day-timeline-form-elems">
       <StyledWrapper>
@@ -155,6 +265,7 @@ const ASDayTimeLineFormElems: React.FC = () => {
           </h3>
         </header>
         <main>
+          {renderEditBar()}
           <Form layout="vertical" form={form} onValuesChange={onValuesChange}>
             <div className="space">{renderFormElements()}</div>
           </Form>
@@ -169,6 +280,14 @@ const ASDayTimeLineFormElems: React.FC = () => {
               onClick={handleAddTimeLine}
             >
               添加时间线
+            </Button>
+            <Button
+              onClick={handleChangeMode}
+              type="primary"
+              shape="round"
+              style={{ padding: "0 8px" }}
+            >
+              {ModeTitle[mode]}
             </Button>
             <Button
               onClick={updateVisualized}

@@ -36,6 +36,15 @@ function dayTimeLineReducer(
       };
       return { ...state, formElements: newFormElements };
     }
+    case ActionTypesEnum.DELETE_TIMELINES: {
+      const deleteFormItemKeys = payload.formItemKeys as string[];
+
+      const newFormElements: FormElements = {};
+      Object.entries(state.formElements).forEach(([id, formItem]) => {
+        !deleteFormItemKeys.includes(id) && (newFormElements[id] = formItem);
+      });
+      return { ...state, formElements: newFormElements };
+    }
     case ActionTypesEnum.UPDATE_FORM_ITEMS_VALUE: {
       const formItemIdMapNewValue = payload.formItemIdMapNewValue as {
         [id: string]: string;

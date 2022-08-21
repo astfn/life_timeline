@@ -95,3 +95,25 @@ export function useShowUsableQuantity() {
   const minute = usableQuantity - hour * 60;
   return { hour, minute };
 }
+
+/**
+ * 获取各表单元素的 id
+ */
+export function useGetFormItemKeys(): string[] {
+  //store
+  const { formElements } = useSelector((store: any) => {
+    const dayTimeLineStore = store.dayTimeLineStore as DayTimeLineStore;
+    return {
+      formElements: dayTimeLineStore.formElements,
+    };
+  }, shallowEqual);
+  //state
+  const [formItemKeys, setFormItemKeys] = useState<string[]>([]);
+
+  //hooks
+  useEffect(() => {
+    setFormItemKeys(Object.keys(formElements));
+  }, [formElements]);
+
+  return formItemKeys;
+}
