@@ -10,7 +10,14 @@ import {
   FormElement,
 } from "@/views/day-timeline/store/types";
 //utils
-import { memo, useCallback, useLayoutEffect, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSelector, shallowEqual, useDispatch } from "react-redux";
 import {
   useShowUsableQuantity,
@@ -82,41 +89,57 @@ const ASDayTimeLineFormElems: React.FC = () => {
    */
   const [visible, setVisible] = useState<boolean>(false);
 
-  const AddTimeLineModalProps = {
-    visible,
-    setVisible,
-    handleConfirm: handleConfirmAddTimeLine,
-  };
-
   const { isFull, usableQuantity } = useTimeLineIsFull();
 
   const { hour, minute } = useShowUsableQuantity();
   const showUsableQuantity = `您还可分配 ${hour} 小时 ${minute} 分钟`;
+  const [addFormItemMsgSwitch, setAddFormItemMsgSwitch] = useState<
+    "init" | boolean
+  >("init");
 
-  function handleConfirmAddTimeLine({
-    formInfo,
-    handleCancel,
-  }: {
-    formInfo: FormElement;
-    handleCancel: Function;
-  }) {
-    if (usableQuantity - toMinute(formInfo) < 0) {
-      Message.error({
-        content: `所分配时间已超过阈值 (${showUsableQuantity})`,
-      });
-    } else {
-      if (timeLineIsRepeat(formInfo.name, formElements)) {
-        Message.error({ content: `已存在相同的时间线！` });
-        return;
+  useEffect(() => {
+    if (addFormItemMsgSwitch === "init" || addFormItemMsgSwitch === false)
+      return;
+    Message.success({
+      content: `添加成功 (您还可分配 ${hour} 小时 ${minute} 分钟)`,
+    });
+    setAddFormItemMsgSwitch(!addFormItemMsgSwitch);
+  }, [addFormItemMsgSwitch, hour, minute]);
+
+  const handleConfirmAddTimeLine = useCallback(
+    ({
+      formInfo,
+      handleCancel,
+    }: {
+      formInfo: FormElement;
+      handleCancel: Function;
+    }) => {
+      if (usableQuantity - toMinute(formInfo) < 0) {
+        Message.error({
+          content: `所分配时间已超过阈值 (${showUsableQuantity})`,
+        });
+      } else {
+        if (timeLineIsRepeat(formInfo.name, formElements)) {
+          Message.error({ content: `已存在相同的时间线！` });
+          return;
+        }
+        dispatch(addTimeLineAction(formInfo));
+        setAddFormItemMsgSwitch(true);
+        handleCancel();
       }
-      dispatch(addTimeLineAction(formInfo));
-      Message.success({
-        content: `添加成功 (${showUsableQuantity})`,
-      });
-      handleCancel();
-    }
-  }
+    },
+    [dispatch, formElements, showUsableQuantity, usableQuantity]
+  );
 
+  const AddTimeLineModalProps = useMemo(() => {
+    return {
+      visible,
+      setVisible,
+      handleConfirm: handleConfirmAddTimeLine,
+    };
+  }, [handleConfirmAddTimeLine, visible]);
+
+  console.log(showUsableQuantity);
   const handleAddTimeLine = useCallback(() => {
     !isFull
       ? setVisible(true)

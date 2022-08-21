@@ -76,11 +76,7 @@ export function updateFormItemsValue_Thunk({
         selectCountByMinute >=
       0;
 
-    const targetAction = isRealUpdate
-      ? updateFormItemsValue(formItemIdMapNewValue)
-      : coverFormItems(formElements);
-
-    dispatch(targetAction);
+    dispatch(coverFormItems(isRealUpdate ? tempFormElements : formElements));
 
     //消息提示
     !isRealUpdate &&
