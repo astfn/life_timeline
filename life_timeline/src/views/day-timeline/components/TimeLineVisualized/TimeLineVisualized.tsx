@@ -1,11 +1,18 @@
 //components
 import { StyledWrapper } from "./style";
-import { PageHeader, Rate, Tabs, Tooltip } from "@arco-design/web-react";
+import {
+  PageHeader,
+  Progress,
+  Rate,
+  Tabs,
+  Tooltip,
+} from "@arco-design/web-react";
 //utils
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import {
   useGetRateCount,
   useGetRateSelectCount,
+  useTimeLineIsFull,
 } from "@/views/day-timeline/store/hooks";
 //types
 import {
@@ -16,6 +23,12 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 //store
 import { changeVisualizedTimeModeAction } from "@/views/day-timeline/store/actoinCreators";
 import { VisualizedTimeModeMapRateCount } from "@/views/day-timeline/store/constants";
+import PieChartElement, {
+  IPieChartDataSource,
+} from "@/components/theme-charts/pie-chart/PieChartElement";
+import { parseObjectToPieChartData } from "@/components/theme-charts/pie-chart/tools";
+import { calculateSelectCount } from "../../store/utils";
+import { cloneDeep } from "lodash";
 
 const TabPane = Tabs.TabPane;
 
@@ -40,10 +53,11 @@ const tabs: ITab[] = [
  */
 const ASDayTimeLineVisualized: React.FC = () => {
   //store
-  const { visualizedTimeMode } = useSelector((store: any) => {
+  const { visualizedTimeMode, formElements } = useSelector((store: any) => {
     const dayTimeLineStore = store.dayTimeLineStore as DayTimeLineStore;
     return {
       visualizedTimeMode: dayTimeLineStore.visualizedTimeMode,
+      formElements: dayTimeLineStore.formElements,
     };
   }, shallowEqual);
 
@@ -54,6 +68,26 @@ const ASDayTimeLineVisualized: React.FC = () => {
       changeVisualizedTimeModeAction(currentTabKey as VisualizedTimeModeEnum)
     );
   };
+
+  const { usableQuantityPercent } = useTimeLineIsFull();
+  const [pieChartDataSource, setPieChartDataSource] = useState<
+    Array<IPieChartDataSource>
+  >([]);
+
+  useEffect(() => {
+    const alias = { value: "weight" };
+    const { formIdMapSelectedCount } = calculateSelectCount(
+      visualizedTimeMode,
+      formElements
+    );
+    const formElementsTemp = cloneDeep(formElements);
+    setPieChartDataSource(
+      Object.entries(formElementsTemp).map(([id, itemData]) => {
+        itemData.weight = String(formIdMapSelectedCount[id]);
+        return parseObjectToPieChartData({ source: itemData, alias });
+      })
+    );
+  }, [formElements, visualizedTimeMode]);
 
   /**
    * renders
@@ -82,6 +116,7 @@ const ASDayTimeLineVisualized: React.FC = () => {
     const showCount = count === Math.round(count) ? Math.round(count) : count;
     return `您还有 ${showCount} 个星星可使用`;
   }
+
   return (
     <div className="day-timeline-visualized">
       <StyledWrapper>
@@ -98,13 +133,23 @@ const ASDayTimeLineVisualized: React.FC = () => {
           }
           subTitle={renderTabs()}
         />
-        <Rate
-          className="visualized-rate"
-          allowHalf
-          readonly
-          count={useGetRateCount()}
-          value={useGetRateSelectCount()}
-        />
+        <main>
+          <Progress
+            percent={usableQuantityPercent}
+            style={{ padding: "0px 15px" }}
+          />
+          <Rate
+            className="visualized-rate"
+            allowHalf
+            readonly
+            count={useGetRateCount()}
+            value={useGetRateSelectCount()}
+          />
+          <PieChartElement
+            className="pie-chart-wrapper"
+            dataSource={pieChartDataSource}
+          />
+        </main>
       </StyledWrapper>
     </div>
   );

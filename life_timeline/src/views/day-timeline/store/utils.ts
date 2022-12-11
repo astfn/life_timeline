@@ -1,23 +1,33 @@
 import { Encode } from "@/utils";
-import { FormElement, FormElements, TimeUnitEnum, VisualizedTimeModeEnum } from "./types";
+import {
+  FormElement,
+  FormElements,
+  TimeUnitEnum,
+  VisualizedTimeModeEnum,
+} from "./types";
 
 /**
  * 计算已选择的 rate 数目的工具
  */
+export interface ICalculateSelectCountRes {
+  selectedTotalCount: number;
+  formIdMapSelectedCount: { [key: string]: number };
+}
 export function calculateSelectCount(
   mode: VisualizedTimeModeEnum,
   formElements: FormElements
-): number {
-  let selectCount = 0;
-  mode === VisualizedTimeModeEnum.HOUR &&
-    (selectCount = calculateSelectCountByHour(formElements));
-  mode === VisualizedTimeModeEnum.MINUTE &&
-    (selectCount = calculateSelectCountByMinute(formElements));
-  return selectCount;
+): ICalculateSelectCountRes {
+  return mode === VisualizedTimeModeEnum.HOUR
+    ? calculateSelectCountByHour(formElements)
+    : calculateSelectCountByMinute(formElements);
 }
 
-export function calculateSelectCountByHour(formElements: FormElements) {
-  let selectedCount = 0;
+export function calculateSelectCountByHour(
+  formElements: FormElements
+): ICalculateSelectCountRes {
+  let selectedTotalCount = 0;
+  const formIdMapSelectedCount: { [key: string]: number } = {};
+
   Object.entries(formElements).forEach(([id, item]) => {
     let currentTime = 0;
     const itemWeight = Number(item.weight);
@@ -26,16 +36,18 @@ export function calculateSelectCountByHour(formElements: FormElements) {
     item.unit === TimeUnitEnum.MINUTE &&
       (currentTime = Number((itemWeight / 60).toFixed(1)));
 
-    selectedCount += currentTime;
+    formIdMapSelectedCount[id] = currentTime;
+    selectedTotalCount += currentTime;
   });
 
-  return selectedCount;
+  return { selectedTotalCount, formIdMapSelectedCount };
 }
 
 export function calculateSelectCountByMinute(
   formElements: FormElements
-): number {
-  let selectedCount = 0;
+): ICalculateSelectCountRes {
+  let selectedTotalCount = 0;
+  const formIdMapSelectedCount: { [key: string]: number } = {};
 
   Object.entries(formElements).forEach(([id, item]) => {
     let currentTime = 0;
@@ -45,10 +57,11 @@ export function calculateSelectCountByMinute(
     item.unit === TimeUnitEnum.HOUR &&
       (currentTime = Math.round(itemWeight * 60));
 
-    selectedCount += currentTime;
+    formIdMapSelectedCount[id] = currentTime;
+    selectedTotalCount += currentTime;
   });
 
-  return selectedCount;
+  return { selectedTotalCount, formIdMapSelectedCount };
 }
 
 //将时间转化为分钟计算

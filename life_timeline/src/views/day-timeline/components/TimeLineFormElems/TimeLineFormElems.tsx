@@ -2,7 +2,14 @@
 import { StyledWrapper } from "./style";
 import ASTimeInput from "@/views/day-timeline/components/time-input";
 import AddTimeLineModal from "@/views/day-timeline/components/AddTimeLineModal/AddTimeLineModal";
-import { Button, Form, Message, Checkbox, Space } from "@arco-design/web-react";
+import {
+  Button,
+  Form,
+  Message,
+  Checkbox,
+  Space,
+  Progress,
+} from "@arco-design/web-react";
 import { IconLeft, IconRight } from "@arco-design/web-react/icon";
 //types
 import {
@@ -120,7 +127,7 @@ const ASDayTimeLineFormElems: React.FC = () => {
    */
   const [visible, setVisible] = useState<boolean>(false);
 
-  const { isFull, usableQuantity } = useTimeLineIsFull();
+  const { isFull, usableQuantity, usableQuantityPercent } = useTimeLineIsFull();
 
   const { hour, minute } = useShowUsableQuantity();
   const showUsableQuantity = `您还可分配 ${hour} 小时 ${minute} 分钟`;
@@ -263,6 +270,7 @@ const ASDayTimeLineFormElems: React.FC = () => {
           <h3 style={{ textAlign: "center" }}>
             您还有 {hour} 小时 {minute} 分钟可自由支配
           </h3>
+          <Progress size="mini" percent={usableQuantityPercent} />
         </header>
         <main>
           {renderEditBar()}

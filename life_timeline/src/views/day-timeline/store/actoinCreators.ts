@@ -94,7 +94,8 @@ export function updateFormItemsValue_Thunk({
       formItemIdMapNewValue[id] && (item.weight = formItemIdMapNewValue[id]);
     });
 
-    const selectCountByMinute = calculateSelectCountByMinute(tempFormElements);
+    const selectCountByMinute =
+      calculateSelectCountByMinute(tempFormElements).selectedTotalCount;
     const isRealUpdate =
       VisualizedTimeModeMapRateCount[VisualizedTimeModeEnum.MINUTE] -
         selectCountByMinute >=

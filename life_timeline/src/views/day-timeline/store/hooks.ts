@@ -47,7 +47,9 @@ export function useGetRateSelectCount(): number {
 
   //hooks
   useEffect(() => {
-    setRateSelectCount(calculateSelectCount(visualizedTimeMode, formElements));
+    setRateSelectCount(
+      calculateSelectCount(visualizedTimeMode, formElements).selectedTotalCount
+    );
   }, [formElements, visualizedTimeMode]);
 
   return rateSelectCount;
@@ -60,6 +62,7 @@ export function useGetRateSelectCount(): number {
 export function useTimeLineIsFull(): {
   isFull: boolean;
   usableQuantity: number;
+  usableQuantityPercent: number;
 } {
   //store
   const { formElements } = useSelector((store: any) => {
@@ -71,18 +74,24 @@ export function useTimeLineIsFull(): {
   //state
   const [isFull, setIsFull] = useState<boolean>(true);
   const [usableQuantity, setUsableQuantity] = useState<number>(0);
+  const [usableQuantityPercent, setUsableQuantityPercent] = useState<number>(0);
   //hooks
   const visualizedTimeMode = VisualizedTimeModeEnum.MINUTE;
   useEffect(() => {
     const allCount = VisualizedTimeModeMapRateCount[visualizedTimeMode];
-    const selectCount = calculateSelectCount(visualizedTimeMode, formElements);
+    const selectCount = calculateSelectCount(
+      visualizedTimeMode,
+      formElements
+    ).selectedTotalCount;
     setIsFull(selectCount >= allCount);
     setUsableQuantity(allCount - selectCount);
+    setUsableQuantityPercent(Math.floor((selectCount / allCount) * 100));
   }, [formElements, visualizedTimeMode]);
 
   return {
     isFull,
     usableQuantity,
+    usableQuantityPercent,
   };
 }
 

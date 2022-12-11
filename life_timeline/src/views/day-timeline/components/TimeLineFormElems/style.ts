@@ -9,6 +9,12 @@ export const StyledWrapper = styled.div`
 
   header {
     padding: 8px 0px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    & > :nth-child(n + 2) {
+      margin-left: 8px;
+    }
   }
   main {
     width: 100%;
